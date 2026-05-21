@@ -100,6 +100,10 @@ button:active { transform: scale(0.98); }
 .tsfees tr:last-child td { border-bottom: none; font-weight: 500; }
 .tsfees td:last-child { text-align: right; }
 .tsfees td:last-child .tsedit { text-align: right; width: 130px; }
+.tsfees-del { background: transparent; border: none; color: var(--color-text-tertiary); font-size: 16px; cursor: pointer; padding: 0 0 0 6px; line-height: 1; vertical-align: middle; }
+.tsfees-del:hover { color: #c0392b; }
+.tsfees-actions { display: flex; justify-content: flex-end; margin: 6px 0 12px; }
+.tsfees-actions button { font-size: 12px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 4px; }
 .tsmisc { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 22px; margin: 18px 0; }
 .tsmisc h3 { margin: 0 0 10px; font-size: 15px; font-weight: 500; }
 .tsmisc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 14px; border-bottom: 0.5px solid var(--color-border-tertiary); }
@@ -136,7 +140,7 @@ button:active { transform: scale(0.98); }
   }
   body { padding: 0; background: #ffffff; font-size: 9.5pt; line-height: 1.3; }
   .container { max-width: none; }
-  .tsactions, #pdfup, .tsstatus, .tsstripe-hint { display: none !important; }
+  .tsactions, #pdfup, .tsstatus, .tsstripe-hint, .tsfees-actions, .tsfees-del { display: none !important; }
   .tsstripe-url { display: block !important; text-align: center; font-size: 8.5pt; margin-top: 4px; word-break: break-all; }
   .tsstripe-url a { color: #1AA64A !important; text-decoration: underline !important; }
   .tswrap { padding: 0; }
@@ -273,9 +277,12 @@ button:active { transform: scale(0.98); }
       <tr><td>Processing Fee</td><td><input class="tsedit" id="f_processingFee" data-fmt="currency" value="$595" /></td></tr>
       <tr><td>Underwriting Fee</td><td><input class="tsedit" id="f_underwritingFee" data-fmt="currency" value="$1,495" /></td></tr>
       <tr><td>Points</td><td><input class="tsedit" id="f_totalPoints" data-fmt="currency" value="$4,097" /></td></tr>
-      <tr><td><strong>Total Fees</strong> <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></td><td><span class="ro" id="m_totalFees">$6,187</span></td></tr>
+      <tr id="feesTotalRow"><td><strong>Total Fees</strong> <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></td><td><span class="ro" id="m_totalFees">$6,187</span></td></tr>
     </tbody>
   </table>
+  <div class="tsfees-actions">
+    <button id="btnAddFee" type="button"><i class="ti ti-plus" aria-hidden="true"></i>Add Fee Item</button>
+  </div>
 
   <div class="tsmisc">
     <h3>Estimated Misc &amp; 3rd Party Costs</h3>

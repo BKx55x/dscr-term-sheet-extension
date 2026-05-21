@@ -128,11 +128,12 @@
       setComputed(document.getElementById('f_totalPoints'), fmtCurrency(loanAmount * rpBpPct / 100));
     }
 
-    // Total Fees = Processing + Underwriting + Points.
-    var tp = rawNum(document.getElementById('f_totalPoints').value);
-    var pf = rawNum(document.getElementById('f_processingFee').value);
-    var uf = rawNum(document.getElementById('f_underwritingFee').value);
-    document.getElementById('m_totalFees').textContent = fmtCurrency(tp + pf + uf) || '—';
+    // Total Fees = sum of every currency input in the fees table (core + custom rows).
+    var feesTotal = 0;
+    document.querySelectorAll('.tsfees tbody input[data-fmt="currency"]').forEach(function(el){
+      feesTotal += rawNum(el.value);
+    });
+    document.getElementById('m_totalFees').textContent = fmtCurrency(feesTotal) || '—';
 
     // Total Misc = sum of misc fees.
     var lf = rawNum(document.getElementById('f_legalFee').value);
@@ -225,6 +226,7 @@
 
   function loadDefault() {
     clearMetricOverrides();
+    removeAllCustomFeeRows();
     applyValues(DEFAULTS);
     DEFAULT_TERMS.forEach(function(t, i){
       var el = document.querySelector('[data-term="'+i+'"]');
@@ -236,6 +238,7 @@
 
   function loadBlank() {
     clearMetricOverrides();
+    removeAllCustomFeeRows();
     var blank = {};
     Object.keys(DEFAULTS).forEach(function(k){ blank[k] = ''; });
     applyValues(blank);
@@ -331,6 +334,65 @@
     });
     window.print();
   }
+
+  // --- Custom fee rows ---
+
+  function wireCurrencyInput(el) {
+    el.addEventListener('focus', function(){ el.value = el.value.replace(/[^0-9.\-]/g, ''); });
+    el.addEventListener('blur', function(){
+      if (el.value === '' || el.value === '-') { recompute(); return; }
+      el.value = fmtCurrency(rawNum(el.value));
+      recompute();
+    });
+    el.addEventListener('input', recompute);
+  }
+
+  function addFeeRow(label, amount) {
+    var tr = document.createElement('tr');
+    tr.className = 'tsfees-custom';
+
+    var tdLabel = document.createElement('td');
+    var labelInput = document.createElement('input');
+    labelInput.className = 'tsedit';
+    labelInput.type = 'text';
+    labelInput.value = label || 'Custom Fee';
+    tdLabel.appendChild(labelInput);
+
+    var tdAmount = document.createElement('td');
+    var amountInput = document.createElement('input');
+    amountInput.className = 'tsedit';
+    amountInput.type = 'text';
+    amountInput.dataset.fmt = 'currency';
+    amountInput.value = amount != null ? fmtCurrency(amount) : '$0';
+    wireCurrencyInput(amountInput);
+
+    var delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'tsfees-del';
+    delBtn.title = 'Remove';
+    delBtn.textContent = '×';
+    delBtn.addEventListener('click', function(){
+      tr.remove();
+      recompute();
+    });
+
+    tdAmount.appendChild(amountInput);
+    tdAmount.appendChild(delBtn);
+    tr.appendChild(tdLabel);
+    tr.appendChild(tdAmount);
+
+    var totalRow = document.getElementById('feesTotalRow');
+    totalRow.parentNode.insertBefore(tr, totalRow);
+    recompute();
+    labelInput.focus();
+    labelInput.select();
+  }
+
+  function removeAllCustomFeeRows() {
+    document.querySelectorAll('.tsfees-custom').forEach(function(tr){ tr.remove(); });
+  }
+
+  document.getElementById('btnAddFee').addEventListener('click', function(){ addFeeRow('', 0); });
 
   document.getElementById('btnReload').addEventListener('click', loadDefault);
   document.getElementById('btnBlank').addEventListener('click', loadBlank);
