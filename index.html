@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DSCR Loan Term Sheet Editor</title>
+<link rel="icon" href="icon128.png" />
+<link rel="stylesheet" href="vendor/tabler/tabler-icons.min.css" />
+<style>
+/* ---------- Design tokens (light + dark) ---------- */
+:root {
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f7f6f3;
+  --color-background-tertiary: #efece6;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #5f5e5a;
+  --color-text-tertiary: #888780;
+  --color-border-tertiary: rgba(0,0,0,0.12);
+  --color-border-secondary: rgba(0,0,0,0.25);
+  --color-border-primary: rgba(0,0,0,0.40);
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1f1f1f;
+    --color-background-secondary: #2a2a2a;
+    --color-background-tertiary: #1a1a1a;
+    --color-text-primary: #f0f0f0;
+    --color-text-secondary: #b4b2a9;
+    --color-text-tertiary: #888780;
+    --color-border-tertiary: rgba(255,255,255,0.12);
+    --color-border-secondary: rgba(255,255,255,0.25);
+    --color-border-primary: rgba(255,255,255,0.40);
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px 16px;
+  background: var(--color-background-tertiary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.container { max-width: 720px; margin: 0 auto; }
+
+button {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-secondary);
+  color: var(--color-text-primary);
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: background 0.12s, transform 0.05s;
+}
+button:hover { background: var(--color-background-secondary); }
+button:active { transform: scale(0.98); }
+
+/* ---------- Term sheet styles ---------- */
+.tswrap { padding: 0.5rem 0; color: var(--color-text-primary); font-family: var(--font-sans); }
+.tshead { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 18px 22px; display: flex; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.tshead h1 { margin: 0; font-size: 22px; font-weight: 500; line-height: 1.2; }
+.tshead .sub { color: var(--color-text-secondary); font-size: 13px; margin-top: 4px; }
+.tsmeta { font-size: 12px; color: var(--color-text-secondary); line-height: 1.7; min-width: 175px; }
+.tsmeta-row { display: flex; gap: 4px; justify-content: flex-end; align-items: center; }
+.tsmeta-row span.k { white-space: nowrap; }
+.tsedit { background: transparent; border: none; font-family: inherit; padding: 1px 4px; border-radius: 3px; color: inherit; font-size: inherit; min-width: 0; }
+.tsedit:hover { background: var(--color-background-tertiary); }
+.tsedit:focus { background: var(--color-background-primary); outline: 1px solid var(--color-border-secondary); }
+.tsmeta .tsedit { text-align: right; max-width: 110px; font-size: 12px; }
+.tscol2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.tscard { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 18px; }
+.tscard h3 { margin: 0 0 10px; font-size: 15px; font-weight: 500; padding-bottom: 8px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.tsline { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 13px; gap: 8px; }
+.tsline > span:first-child { color: var(--color-text-secondary); }
+.tsline .tsedit { text-align: right; flex: 1; font-size: 13px; }
+.tsh2 { font-size: 18px; font-weight: 500; margin: 4px 0 10px; }
+.tsmetrics { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 18px 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; text-align: center; }
+.tsmetrics .lbl { color: var(--color-text-secondary); font-size: 12px; margin-bottom: 4px; }
+.tsmetrics .val { color: #6B5BD6; font-size: 20px; font-weight: 500; }
+.tsmetrics input.val { text-align: center; width: 100%; border: none; background: transparent; font-family: inherit; padding: 2px 0; }
+.tsmetrics input.val:hover { background: var(--color-background-tertiary); border-radius: 4px; }
+.tsmetrics input.val:focus { outline: 1px solid var(--color-border-secondary); border-radius: 4px; background: var(--color-background-primary); }
+.tsbox { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px 22px; margin-bottom: 18px; }
+.tsgrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; }
+.tsfield-lbl { color: var(--color-text-secondary); font-size: 13px; display: block; margin-bottom: 2px; }
+.tsfield-val { font-size: 15px; font-weight: 500; min-height: 22px; }
+.tsfield-val .tsedit { font-size: 15px; font-weight: 500; width: 100%; box-sizing: border-box; }
+.tsfield-val .ro { color: var(--color-text-secondary); }
+.tsfees { width: 100%; border-collapse: collapse; background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+.tsfees th { background: var(--color-background-secondary); padding: 11px 16px; text-align: left; font-weight: 500; font-size: 14px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.tsfees td { padding: 11px 16px; font-size: 14px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.tsfees tr:last-child td { border-bottom: none; font-weight: 500; }
+.tsfees td:last-child { text-align: right; }
+.tsfees td:last-child .tsedit { text-align: right; width: 130px; }
+.tsmisc { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 22px; margin: 18px 0; }
+.tsmisc h3 { margin: 0 0 10px; font-size: 15px; font-weight: 500; }
+.tsmisc-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 14px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+.tsmisc-row:nth-last-child(2) { border-bottom: 1px solid var(--color-border-secondary); }
+.tsmisc-row:last-child { font-weight: 500; border-bottom: none; padding-top: 8px; }
+.tsmisc-row .tsedit { text-align: right; width: 120px; }
+.tsimport { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 14px 22px; margin-bottom: 18px; }
+.tsimport ul { margin: 0; padding: 0; list-style: none; }
+.tsimport li { font-size: 13px; line-height: 1.9; padding-left: 14px; position: relative; display: flex; }
+.tsimport li::before { content: "•"; position: absolute; left: 0; color: var(--color-text-secondary); }
+.tsimport li .tsedit { font-size: 13px; flex: 1; }
+.tsnotice { background: #FAEEDA; border: 0.5px solid #EF9F27; border-radius: var(--border-radius-lg); padding: 16px 22px; margin: 18px 0; }
+.tsnotice-lbl { color: #633806; font-weight: 500; font-size: 14px; margin-bottom: 8px; }
+.tsnotice textarea { background: transparent; border: none; width: 100%; color: #633806; font-size: 13px; line-height: 1.6; font-family: inherit; resize: vertical; min-height: 100px; box-sizing: border-box; padding: 4px; }
+.tsnotice textarea:focus { outline: 1px solid #BA7517; background: rgba(255,255,255,0.4); border-radius: 4px; }
+.tsactions { display: flex; gap: 10px; margin: 16px 0; flex-wrap: wrap; align-items: center; }
+.tsactions button { padding: 7px 14px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.tsstripe { display: flex; align-items: center; justify-content: center; gap: 8px; background: #1AA64A; color: white !important; text-align: center; padding: 18px; border-radius: var(--border-radius-lg); text-decoration: none; font-size: 18px; font-weight: 500; margin: 14px 0 6px; }
+.tsstripe:hover { background: #168F3F; text-decoration: none; }
+.tsstripe-hint { text-align: center; color: var(--color-text-secondary); font-size: 13px; }
+.tsstripe-url { display: none; }
+.tsstatus { font-size: 12px; color: var(--color-text-secondary); }
+
+@media print {
+  @page { size: Letter; margin: 0.4in; }
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f7f6f3;
+    --color-background-tertiary: #ffffff;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #5f5e5a;
+    --color-border-tertiary: rgba(0,0,0,0.18);
+    --color-border-secondary: rgba(0,0,0,0.30);
+  }
+  body { padding: 0; background: #ffffff; font-size: 9.5pt; line-height: 1.3; }
+  .container { max-width: none; }
+  .tsactions, #pdfup, .tsstatus, .tsstripe-hint { display: none !important; }
+  .tsstripe-url { display: block !important; text-align: center; font-size: 8.5pt; margin-top: 4px; word-break: break-all; }
+  .tsstripe-url a { color: #1AA64A !important; text-decoration: underline !important; }
+  .tswrap { padding: 0; }
+  .tsstripe {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color: #ffffff !important;
+    background: #1AA64A !important;
+    padding: 10px !important;
+    font-size: 13pt !important;
+    margin: 8px 0 0 !important;
+  }
+  .tsedit, .tsnotice textarea {
+    border: none !important; outline: none !important; background: transparent !important;
+    padding: 0 !important; color: inherit !important;
+  }
+  .tsnotice textarea { resize: none; min-height: 0; height: auto; overflow: visible; font-size: 8.5pt !important; line-height: 1.3 !important; }
+  .tshead, .tscard, .tsbox, .tsfees, .tsmisc, .tsimport, .tsnotice, .tsmetrics {
+    page-break-inside: avoid;
+    box-shadow: none !important;
+  }
+  .tshead { padding: 10px 14px !important; margin-bottom: 8px !important; }
+  .tshead h1 { font-size: 16pt !important; }
+  .tshead .sub { font-size: 9pt !important; margin-top: 2px !important; }
+  .tsmeta, .tsmeta .tsedit { font-size: 8.5pt !important; line-height: 1.35 !important; }
+  .tscol2 { gap: 8px !important; margin-bottom: 8px !important; }
+  .tscard { padding: 8px 12px !important; }
+  .tscard h3 { font-size: 10.5pt !important; margin: 0 0 4px !important; padding-bottom: 4px !important; }
+  .tsline { padding: 1px 0 !important; font-size: 9pt !important; }
+  .tsline .tsedit { font-size: 9pt !important; }
+  .tsh2 { font-size: 11pt !important; margin: 6px 0 4px !important; page-break-after: avoid; }
+  .tsmetrics { padding: 8px 12px !important; margin-bottom: 8px !important; gap: 8px !important; }
+  .tsmetrics .lbl { font-size: 8.5pt !important; margin-bottom: 0 !important; }
+  .tsmetrics .val, .tsmetrics input.val { font-size: 12pt !important; }
+  .tsbox { padding: 8px 14px !important; margin-bottom: 8px !important; }
+  .tsgrid2 { gap: 6px 20px !important; }
+  .tsfield-lbl { font-size: 8.5pt !important; }
+  .tsfield-val, .tsfield-val .tsedit, .tsfield-val .ro { font-size: 10pt !important; }
+  .tsfees th, .tsfees td { padding: 5px 12px !important; font-size: 9.5pt !important; }
+  .tsmisc { padding: 8px 14px !important; margin: 8px 0 !important; }
+  .tsmisc h3 { font-size: 10.5pt !important; margin: 0 0 4px !important; }
+  .tsmisc-row { padding: 2px 0 !important; font-size: 9pt !important; }
+  .tsimport { padding: 8px 14px !important; margin-bottom: 8px !important; }
+  .tsimport li { font-size: 8.5pt !important; line-height: 1.35 !important; padding-left: 12px !important; }
+  .tsimport li .tsedit { font-size: 8.5pt !important; }
+  .tsnotice { padding: 8px 14px !important; margin: 8px 0 !important; }
+  .tsnotice-lbl { font-size: 9.5pt !important; margin-bottom: 3px !important; }
+  .tsfees, .tsmisc { break-inside: avoid; }
+  a, a:visited { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="tswrap">
+  <div class="tshead">
+    <div>
+      <h1>DSCR Loan Term Sheet</h1>
+      <div class="sub">30-Year Term Rental Loan</div>
+    </div>
+    <div class="tsmeta">
+      <div class="tsmeta-row"><span class="k">Date:</span><input class="tsedit" id="f_date" value="" /></div>
+      <div class="tsmeta-row"><span class="k">Reference:</span><input class="tsedit" id="f_reference" value="TS-626064" /></div>
+      <div class="tsmeta-row"><input class="tsedit" id="f_riskPricing" value="RP0.03-BP3.00" /></div>
+    </div>
+  </div>
+
+  <div class="tscol2">
+    <div class="tscard">
+      <h3>Borrower Information</h3>
+      <div class="tsline"><span>Primary Borrower:</span><input class="tsedit" id="f_primaryBorrower" value="TBD" /></div>
+      <div class="tsline"><span>Credit Score:</span><input class="tsedit" id="f_creditScore" value="740" /></div>
+      <div class="tsline"><span>Experience Level:</span><input class="tsedit" id="f_experience" value="Experienced" /></div>
+      <div class="tsline"><span>Borrower Type:</span><input class="tsedit" id="f_borrowerType" value="US Citizen/Resident" /></div>
+      <div class="tsline"><span>Property Management:</span><input class="tsedit" id="f_propertyMgmt" value="Self-Managed" /></div>
+    </div>
+    <div class="tscard">
+      <h3>Property Information</h3>
+      <div class="tsline"><span>Address:</span><input class="tsedit" id="f_address" value="6249 Homer St" /></div>
+      <div class="tsline"><span>City, State:</span><input class="tsedit" id="f_cityState" value="Philadelphia, PA 19144" /></div>
+      <div class="tsline"><span>Property Type:</span><input class="tsedit" id="f_propertyType" value="Single Family" /></div>
+      <div class="tsline"><span>Units:</span><input class="tsedit" id="f_units" value="1" /></div>
+      <div class="tsline"><span>Loan Purpose:</span><input class="tsedit" id="f_loanPurpose" value="Cash-Out Refinance" /></div>
+    </div>
+  </div>
+
+  <h2 class="tsh2">Key Loan Metrics</h2>
+  <div class="tsmetrics">
+    <div><div class="lbl">LTV</div><input class="tsedit val" id="m_ltv" value="45.0%" /></div>
+    <div><div class="lbl">DSCR</div><input class="tsedit val" id="m_dscr" value="2.11x" /></div>
+    <div><div class="lbl">Loan Amount</div><span class="val" id="m_loanAmount">$135,000</span></div>
+    <div><div class="lbl">Interest Rate</div><span class="val" id="m_interestRate">6.38%</span></div>
+    <div><div class="lbl">Monthly Payment</div><span class="val" id="m_monthly">$842.22</span></div>
+  </div>
+
+  <h2 class="tsh2">Loan Terms</h2>
+  <div class="tsbox">
+    <div class="tsgrid2">
+      <div><span class="tsfield-lbl">Program</span><div class="tsfield-val"><input class="tsedit" id="f_program" value="1-4 DSCR" /></div></div>
+      <div><span class="tsfield-lbl">Loan Amount</span><div class="tsfield-val"><input class="tsedit" id="f_loanAmount" data-fmt="currency" value="$135,000" /></div></div>
+      <div><span class="tsfield-lbl">Interest Rate</span><div class="tsfield-val"><input class="tsedit" id="f_interestRate" data-fmt="percent" value="6.38%" /></div></div>
+      <div><span class="tsfield-lbl">Term</span><div class="tsfield-val"><input class="tsedit" id="f_term" value="30 Years" /></div></div>
+      <div><span class="tsfield-lbl">Amortization</span><div class="tsfield-val"><input class="tsedit" id="f_amortization" value="30-Year Amortizing" /></div></div>
+      <div><span class="tsfield-lbl">Max LTV</span><div class="tsfield-val"><input class="tsedit" id="f_maxLtv" data-fmt="percent" value="75.00%" /></div></div>
+      <div><span class="tsfield-lbl">Monthly Payment <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></span><div class="tsfield-val"><span class="ro" id="m_monthlyTerms">$842.22</span></div></div>
+      <div><span class="tsfield-lbl">Prepayment Penalty</span><div class="tsfield-val"><input class="tsedit" id="f_prepayment" value="5 Years" /></div></div>
+    </div>
+  </div>
+
+  <h2 class="tsh2">Property &amp; Income</h2>
+  <div class="tsbox">
+    <div class="tsgrid2">
+      <div><span class="tsfield-lbl">Property Value (Appraised)</span><div class="tsfield-val"><input class="tsedit" id="f_propertyValue" data-fmt="currency" value="$300,000" /></div></div>
+      <div><span class="tsfield-lbl">Monthly TIA (Taxes/Ins/HOA)</span><div class="tsfield-val"><input class="tsedit" id="f_tia" data-fmt="currency" value="$175" /></div></div>
+    </div>
+  </div>
+
+  <h2 class="tsh2">DSCR Analysis</h2>
+  <div class="tsbox">
+    <div class="tsgrid2">
+      <div><span class="tsfield-lbl">DSCR <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></span><div class="tsfield-val"><span class="ro" id="m_dscrAnalysis">2.11x</span></div></div>
+      <div><span class="tsfield-lbl">Min Required DSCR</span><div class="tsfield-val"><input class="tsedit" id="f_minDscr" value="1.00x" /></div></div>
+      <div><span class="tsfield-lbl">Monthly Gross Rent</span><div class="tsfield-val"><input class="tsedit" id="f_grossRent" data-fmt="currency" value="$1,950" /></div></div>
+      <div><span class="tsfield-lbl">NOI <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></span><div class="tsfield-val"><input class="tsedit" id="f_noi" data-fmt="currency" value="$1,775" /></div></div>
+      <div><span class="tsfield-lbl">Monthly PITIA <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></span><div class="tsfield-val"><input class="tsedit" id="f_pitia" data-fmt="currency" value="$1,017.22" /></div></div>
+    </div>
+  </div>
+
+  <h2 class="tsh2">Fees &amp; Closing Costs</h2>
+  <table class="tsfees">
+    <thead><tr><th>Fee Type</th><th style="text-align:right">Amount</th></tr></thead>
+    <tbody>
+      <tr><td>Processing Fee</td><td><input class="tsedit" id="f_processingFee" data-fmt="currency" value="$595" /></td></tr>
+      <tr><td>Underwriting Fee</td><td><input class="tsedit" id="f_underwritingFee" data-fmt="currency" value="$1,495" /></td></tr>
+      <tr><td>Points</td><td><input class="tsedit" id="f_totalPoints" data-fmt="currency" value="$4,097" /></td></tr>
+      <tr><td><strong>Total Fees</strong> <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></td><td><span class="ro" id="m_totalFees">$6,187</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="tsmisc">
+    <h3>Estimated Misc &amp; 3rd Party Costs</h3>
+    <div class="tsmisc-row"><span>Legal Fee</span><input class="tsedit" id="f_legalFee" data-fmt="currency" value="$1,100" /></div>
+    <div class="tsmisc-row"><span>Servicing Set Up</span><input class="tsedit" id="f_servicingSetup" data-fmt="currency" value="$30" /></div>
+    <div class="tsmisc-row"><span>Situs Ordering Fee</span><input class="tsedit" id="f_situsFee" data-fmt="currency" value="$70" /></div>
+    <div class="tsmisc-row"><span>Document Prep Fee</span><input class="tsedit" id="f_docPrepFee" data-fmt="currency" value="$990" /></div>
+    <div class="tsmisc-row"><span>Courier &amp; Wire Fee</span><input class="tsedit" id="f_courierFee" data-fmt="currency" value="$180" /></div>
+    <div class="tsmisc-row"><span>Total <em style="font-style:normal;font-size:10px;opacity:0.6">(auto)</em></span><span class="ro" id="m_totalMisc">$2,370</span></div>
+  </div>
+
+  <h2 class="tsh2">Important Terms</h2>
+  <div class="tsimport">
+    <ul id="termsList">
+      <li><input class="tsedit" data-term="0" value="Loan Type: 30-year fixed or 30-year with interest-only period" /></li>
+      <li><input class="tsedit" data-term="1" value="Amortization: 30-year amortizing or interest-only for initial period" /></li>
+      <li><input class="tsedit" data-term="2" value="Prepayment: 5 years penalty, declining schedule" /></li>
+      <li><input class="tsedit" data-term="3" value="Borrowing Entity: LLC, LP, or Corporation domiciled in the United States" /></li>
+      <li><input class="tsedit" data-term="4" value="Personal Guarantee: Required from managing members with aggregate 51% ownership" /></li>
+    </ul>
+  </div>
+
+  <div class="tsnotice">
+    <div class="tsnotice-lbl">IMPORTANT NOTICE:</div>
+    <textarea id="f_notice">This letter is merely a general proposal, and is neither a binding offer, nor a contract. Borrower understands that no such offer will be forthcoming prior to completion of appropriate due diligence and underwriting performed and/or contracted by Lender. This proposal does not create any legally binding obligations on any party hereto. All properties are subject to satisfactory Lender due diligence underwriting including: satisfactory appraisal, satisfactory credit review of the borrowing entity and Key Principals, and satisfactory review of the property's market and submarket.</textarea>
+  </div>
+
+  <div class="tsactions">
+    <button id="btnReload"><i class="ti ti-refresh" aria-hidden="true"></i>Reload Sample</button>
+    <button id="btnBlank"><i class="ti ti-trash" aria-hidden="true"></i>Blank Version</button>
+    <button id="btnUpload"><i class="ti ti-upload" aria-hidden="true"></i>Upload Term Sheet PDF</button>
+    <button id="btnDownload"><i class="ti ti-file-download" aria-hidden="true"></i>Download as PDF</button>
+    <input type="file" id="pdfup" accept="application/pdf,.pdf" style="position:absolute;left:-9999px" />
+    <span class="tsstatus" id="upstatus"></span>
+  </div>
+
+  <a class="tsstripe" id="acceptQuoteLink" href="https://buy.stripe.com/7sYaEX15F4qy0q05Je2B201" target="_blank" rel="noopener"><i class="ti ti-circle-check" aria-hidden="true"></i>Accept Quote</a>
+  <div class="tsstripe-hint">Click the button above to proceed with loan application</div>
+  <div class="tsstripe-url"><a href="https://buy.stripe.com/7sYaEX15F4qy0q05Je2B201" target="_blank" rel="noopener">https://buy.stripe.com/7sYaEX15F4qy0q05Je2B201</a></div>
+</div>
+
+</div>
+
+<script src="vendor/pdfjs/pdf.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
